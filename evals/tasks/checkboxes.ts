@@ -18,7 +18,6 @@ export const checkboxes: EvalFunction = async ({
     action: "click the 'netball' option",
   });
 
-  // confirm that the Medium radio is now checked
   const baseballChecked = await stagehand.page
     .locator('input[type="checkbox"][name="sports"][value="baseball"]')
     .isChecked();
