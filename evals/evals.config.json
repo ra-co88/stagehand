@@ -321,6 +321,10 @@
     {
       "name": "radio_btn",
       "categories": ["act"]
+    },
+    {
+      "name": "checkboxes",
+      "categories": ["act"]
     }
   ]
 }
