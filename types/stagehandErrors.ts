@@ -150,7 +150,8 @@ export class StagehandDomProcessError extends StagehandError {
 
 export class StagehandClickError extends StagehandError {
   constructor(message: string, selector: string) {
-    super(`Error Clicking Element with selector: ${selector}\n 
-    Reason: ${message}`);
+    super(
+      `Error Clicking Element with selector: ${selector} Reason: ${message}`,
+    );
   }
 }
