@@ -266,7 +266,7 @@ ${scriptContent} \
           ) {
             return async (...args: unknown[]) => {
               this.intContext.setActivePage(this);
-              // Make sure helpers exist before the user’s evaluation
+              // Make sure helpers exist
               await this.ensureStagehandScript();
               return (value as (...a: unknown[]) => unknown).apply(
                 target,
