@@ -145,6 +145,7 @@ ${scriptContent} \
           trace: { value: (err as Error).stack, type: "string" },
         },
       });
+      throw err;
     }
   }
 
