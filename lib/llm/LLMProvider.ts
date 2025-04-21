@@ -21,8 +21,10 @@ const modelToProviderMap: { [key in AvailableModel]: ModelProvider } = {
   "gpt-4.1-mini": "openai",
   "gpt-4.1-nano": "openai",
   "o4-mini": "openai",
+  //prettier-ignore
   "o3": "openai",
   "o3-mini": "openai",
+  //prettier-ignore
   "o1": "openai",
   "o1-mini": "openai",
   "gpt-4o": "openai",
