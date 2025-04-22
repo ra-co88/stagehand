@@ -6,69 +6,15 @@
  */
 
 import { AvailableModel, ClientOptions, Stagehand } from "@/dist";
+import { LLMResponseError } from "@/types/stagehandErrors";
 import dotenv from "dotenv";
+import {
+  EvaluateOptions,
+  EvaluationResult,
+  BatchEvaluateOptions,
+} from "@/types/evaluator";
 
 dotenv.config();
-
-export interface EvaluateOptions {
-  /**
-   * The question to ask about the task state
-   */
-  question: string;
-  /**
-   * Custom system prompt for the evaluator
-   */
-  systemPrompt?: string;
-  /**
-   * Delay in milliseconds before taking the screenshot
-   * @default 1000
-   */
-  screenshotDelayMs?: number;
-  /**
-   * Whether to throw an error if the response is not a clear YES or NO
-   * @default false
-   */
-  strictResponse?: boolean;
-}
-
-export interface BatchEvaluateOptions {
-  /**
-   * Array of questions to evaluate
-   */
-  questions: string[];
-  /**
-   * Custom system prompt for the evaluator
-   */
-  systemPrompt?: string;
-  /**
-   * Delay in milliseconds before taking the screenshot
-   * @default 1000
-   */
-  screenshotDelayMs?: number;
-  /**
-   * Whether to throw an error if any response is not a clear YES or NO
-   * @default false
-   */
-  strictResponse?: boolean;
-  /**
-   * The reasoning behind the evaluation
-   */
-  reasoning?: string;
-}
-
-/**
- * Result of an evaluation
- */
-export interface EvaluationResult {
-  /**
-   * The evaluation result ('YES', 'NO', or 'INVALID' if parsing failed or value was unexpected)
-   */
-  evaluation: "YES" | "NO" | "INVALID";
-  /**
-   * The reasoning behind the evaluation
-   */
-  reasoning: string;
-}
 
 export class Evaluator {
   private stagehand: Stagehand;
@@ -117,7 +63,7 @@ export class Evaluator {
     );
 
     const response = await llmClient.createChatCompletion({
-      logger: () => {},
+      logger: this.stagehand.logger,
       options: {
         messages: [
           { role: "system", content: systemPrompt },
@@ -149,7 +95,8 @@ export class Evaluator {
         typeof parsedResult.evaluation !== "string" ||
         typeof parsedResult.reasoning !== "string"
       ) {
-        throw new Error(
+        throw new LLMResponseError(
+          "Evaluator",
           `Invalid JSON structure received: ${JSON.stringify(parsedResult)}`,
         );
       }
@@ -168,7 +115,8 @@ export class Evaluator {
       } else {
         // Parsed JSON but evaluation value wasn't YES/NO variant
         if (strictResponse) {
-          throw new Error(
+          throw new LLMResponseError(
+            "Evaluator",
             `Invalid evaluation value in JSON: ${parsedResult.evaluation}`,
           );
         }
@@ -178,12 +126,11 @@ export class Evaluator {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      console.error("Failed during evaluation processing:", errorMessage);
       // Update reasoning with error details
       reasoning = `Processing error: ${errorMessage}. Raw response: ${rawResponse}`;
       if (strictResponse) {
         // Re-throw error if in strict mode
-        throw new Error(reasoning);
+        throw new LLMResponseError("Evaluator", reasoning);
       }
       // Keep evaluationResult as "INVALID"
     }
@@ -233,7 +180,7 @@ export class Evaluator {
 
     // Use the model-specific LLM client to evaluate the screenshot with all questions
     const response = await llmClient.createChatCompletion({
-      logger: () => {},
+      logger: this.stagehand.logger,
       options: {
         messages: [
           {
@@ -252,7 +199,7 @@ export class Evaluator {
     });
 
     const rawResponse = response.choices[0].message.content;
-    const finalResults: EvaluationResult[] = [];
+    let finalResults: EvaluationResult[] = [];
 
     try {
       // Clean potential markdown fences
@@ -266,13 +213,15 @@ export class Evaluator {
         JSON.parse(cleanedResponse);
 
       if (!Array.isArray(parsedResults)) {
-        throw new Error("Response is not a JSON array.");
+        throw new LLMResponseError(
+          "Evaluator",
+          "Response is not a JSON array.",
+        );
       }
 
       if (parsedResults.length !== questions.length && strictResponse) {
-        // Optional: Log a warning even if not strict?
-        // console.warn(`LLM returned ${parsedResults.length} results, but ${questions.length} questions were asked.`);
-        throw new Error(
+        throw new LLMResponseError(
+          "Evaluator",
           `Expected ${questions.length} results, but got ${parsedResults.length}`,
         );
       }
@@ -288,7 +237,8 @@ export class Evaluator {
             typeof item.reasoning !== "string"
           ) {
             if (strictResponse) {
-              throw new Error(
+              throw new LLMResponseError(
+                "Evaluator",
                 `Invalid object structure for question ${i + 1}: ${JSON.stringify(item)}`,
               );
             }
@@ -314,7 +264,8 @@ export class Evaluator {
           } else {
             // Invalid evaluation value
             if (strictResponse) {
-              throw new Error(
+              throw new LLMResponseError(
+                "Evaluator",
                 `Invalid evaluation value for question ${i + 1}: ${item.evaluation}`,
               );
             }
@@ -326,7 +277,10 @@ export class Evaluator {
         } else {
           // Missing result for this question
           if (strictResponse) {
-            throw new Error(`No response found for question ${i + 1}`);
+            throw new LLMResponseError(
+              "Evaluator",
+              `No response found for question ${i + 1}`,
+            );
           }
           finalResults.push({
             evaluation: "INVALID",
@@ -337,15 +291,15 @@ export class Evaluator {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      console.error("Failed to parse LLM response as JSON:", errorMessage);
       // If JSON parsing fails or structure is wrong, handle based on strictResponse
       if (strictResponse) {
-        throw new Error(
+        throw new LLMResponseError(
+          "Evaluator",
           `Failed to parse LLM response or invalid format: ${rawResponse}. Error: ${errorMessage}`,
         );
       }
       // Fallback: return INVALID for all questions
-      finalResults.length = 0; // Clear any potentially partially filled results
+      finalResults = []; // Clear any potentially partially filled results
       for (let i = 0; i < questions.length; i++) {
         finalResults.push({
           evaluation: "INVALID",
