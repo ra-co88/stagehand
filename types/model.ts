@@ -3,18 +3,24 @@ import type { ClientOptions as OpenAIClientOptions } from "openai";
 import { z } from "zod";
 
 export const AvailableModelSchema = z.enum([
+  "gpt-4.1",
+  "gpt-4.1-mini",
+  "gpt-4.1-nano",
+  "o4-mini",
+  "o3",
+  "o3-mini",
+  "o1",
+  "o1-mini",
   "gpt-4o",
   "gpt-4o-mini",
   "gpt-4o-2024-08-06",
   "gpt-4.5-preview",
+  "o1-preview",
   "claude-3-5-sonnet-latest",
   "claude-3-5-sonnet-20241022",
   "claude-3-5-sonnet-20240620",
   "claude-3-7-sonnet-latest",
   "claude-3-7-sonnet-20250219",
-  "o1-mini",
-  "o1-preview",
-  "o3-mini",
   "cerebras-llama-3.3-70b",
   "cerebras-llama-3.1-8b",
   "groq-llama-3.3-70b-versatile",
@@ -24,6 +30,7 @@ export const AvailableModelSchema = z.enum([
   "gemini-1.5-flash-8b",
   "gemini-2.0-flash-lite",
   "gemini-2.0-flash",
+  "gemini-2.5-flash-preview-04-17",
   "gemini-2.5-pro-preview-03-25",
 ]);
 
