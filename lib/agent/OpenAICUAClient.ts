@@ -97,12 +97,12 @@ export class OpenAICUAClient extends AgentClient {
     // Start with the initial instruction
     let inputItems = this.createInitialInputItems(instruction);
     let previousResponseId: string | undefined = undefined;
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+    let totalInferenceTime = 0;
 
     try {
       // Execute steps until completion or max steps reached
-      let totalInputTokens = 0;
-      let totalOutputTokens = 0;
-      let totalInferenceTime = 0;
       while (!completed && currentStep < maxSteps) {
         logger({
           category: "agent",
@@ -169,6 +169,11 @@ export class OpenAICUAClient extends AgentClient {
         actions,
         message: `Failed to execute task: ${errorMessage}`,
         completed: false,
+        usage: {
+          input_tokens: totalInputTokens,
+          output_tokens: totalOutputTokens,
+          inference_time_ms: totalInferenceTime,
+        },
       };
     }
   }

@@ -107,10 +107,11 @@ export class AnthropicCUAClient extends AgentClient {
       level: 1,
     });
 
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+    let totalInferenceTime = 0;
+
     try {
-      let totalInputTokens = 0;
-      let totalOutputTokens = 0;
-      let totalInferenceTime = 0;
       // Execute steps until completion or max steps reached
       while (!completed && currentStep < maxSteps) {
         logger({
@@ -184,6 +185,11 @@ export class AnthropicCUAClient extends AgentClient {
         actions,
         message: `Failed to execute task: ${errorMessage}`,
         completed: false,
+        usage: {
+          input_tokens: totalInputTokens,
+          output_tokens: totalOutputTokens,
+          inference_time_ms: totalInferenceTime,
+        },
       };
     }
   }
