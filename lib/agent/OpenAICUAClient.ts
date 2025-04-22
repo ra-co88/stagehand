@@ -102,6 +102,7 @@ export class OpenAICUAClient extends AgentClient {
       // Execute steps until completion or max steps reached
       let totalInputTokens = 0;
       let totalOutputTokens = 0;
+      let totalInferenceTime = 0;
       while (!completed && currentStep < maxSteps) {
         logger({
           category: "agent",
@@ -116,6 +117,7 @@ export class OpenAICUAClient extends AgentClient {
         );
         totalInputTokens += result.usage.input_tokens;
         totalOutputTokens += result.usage.output_tokens;
+        totalInferenceTime += result.usage.inference_time_ms;
 
         // Add actions to the list
         actions.push(...result.actions);
@@ -150,6 +152,7 @@ export class OpenAICUAClient extends AgentClient {
         usage: {
           input_tokens: totalInputTokens,
           output_tokens: totalOutputTokens,
+          inference_time_ms: totalInferenceTime,
         },
       };
     } catch (error) {
@@ -184,7 +187,11 @@ export class OpenAICUAClient extends AgentClient {
     completed: boolean;
     nextInputItems: ResponseInputItem[];
     responseId: string;
-    usage: { input_tokens: number; output_tokens: number };
+    usage: {
+      input_tokens: number;
+      output_tokens: number;
+      inference_time_ms: number;
+    };
   }> {
     try {
       // Get response from the model
@@ -194,6 +201,7 @@ export class OpenAICUAClient extends AgentClient {
       const usage = {
         input_tokens: result.usage.input_tokens,
         output_tokens: result.usage.output_tokens,
+        inference_time_ms: result.usage.inference_time_ms,
       };
 
       // Add any reasoning items to our map
@@ -328,14 +336,18 @@ export class OpenAICUAClient extends AgentClient {
         requestParams.previous_response_id = previousResponseId;
       }
 
+      const startTime = Date.now();
       // Create the response using the OpenAI Responses API
       // @ts-expect-error - Force type to match what the OpenAI SDK expects
       const response = await this.client.responses.create(requestParams);
+      const endTime = Date.now();
+      const elapsedMs = endTime - startTime;
 
       // Extract only the input_tokens and output_tokens
       const usage = {
         input_tokens: response.usage.input_tokens,
         output_tokens: response.usage.output_tokens,
+        inference_time_ms: elapsedMs,
       };
 
       // Store the response ID for future use

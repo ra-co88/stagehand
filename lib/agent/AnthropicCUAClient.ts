@@ -108,6 +108,9 @@ export class AnthropicCUAClient extends AgentClient {
     });
 
     try {
+      let totalInputTokens = 0;
+      let totalOutputTokens = 0;
+      let totalInferenceTime = 0;
       // Execute steps until completion or max steps reached
       while (!completed && currentStep < maxSteps) {
         logger({
@@ -117,6 +120,9 @@ export class AnthropicCUAClient extends AgentClient {
         });
 
         const result = await this.executeStep(inputItems, logger);
+        totalInputTokens += result.usage.input_tokens;
+        totalOutputTokens += result.usage.output_tokens;
+        totalInferenceTime += result.usage.inference_time_ms;
 
         // Add actions to the list
         if (result.actions.length > 0) {
@@ -158,6 +164,11 @@ export class AnthropicCUAClient extends AgentClient {
         actions,
         message: finalMessage,
         completed,
+        usage: {
+          input_tokens: totalInputTokens,
+          output_tokens: totalOutputTokens,
+          inference_time_ms: totalInferenceTime,
+        },
       };
     } catch (error) {
       const errorMessage =
@@ -185,7 +196,11 @@ export class AnthropicCUAClient extends AgentClient {
     message: string;
     completed: boolean;
     nextInputItems: ResponseInputItem[];
-    usage: { input_tokens: number; output_tokens: number };
+    usage: {
+      input_tokens: number;
+      output_tokens: number;
+      inference_time_ms: number;
+    };
   }> {
     try {
       // Get response from the model
@@ -194,6 +209,7 @@ export class AnthropicCUAClient extends AgentClient {
       const usage = {
         input_tokens: result.usage.input_tokens,
         output_tokens: result.usage.output_tokens,
+        inference_time_ms: result.usage.inference_time_ms,
       };
 
       logger({
@@ -424,12 +440,16 @@ export class AnthropicCUAClient extends AgentClient {
         );
       }
 
+      const startTime = Date.now();
       // Create the message using the Anthropic Messages API
       // @ts-expect-error - The Anthropic SDK types are stricter than what we need
       const response = await this.client.beta.messages.create(requestParams);
+      const endTime = Date.now();
+      const elapsedMs = endTime - startTime;
       const usage = {
         input_tokens: response.usage.input_tokens,
         output_tokens: response.usage.output_tokens,
+        inference_time_ms: elapsedMs,
       };
 
       // Store the message ID for future use

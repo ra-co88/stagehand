@@ -184,7 +184,7 @@ export class StagehandAgentHandler {
         StagehandFunctionName.AGENT,
         result.usage.input_tokens,
         result.usage.output_tokens,
-        0,
+        result.usage.inference_time_ms,
       );
     }
 
