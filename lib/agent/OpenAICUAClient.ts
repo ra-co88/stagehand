@@ -100,6 +100,8 @@ export class OpenAICUAClient extends AgentClient {
 
     try {
       // Execute steps until completion or max steps reached
+      let totalInputTokens = 0;
+      let totalOutputTokens = 0;
       while (!completed && currentStep < maxSteps) {
         logger({
           category: "agent",
@@ -112,6 +114,8 @@ export class OpenAICUAClient extends AgentClient {
           previousResponseId,
           logger,
         );
+        totalInputTokens += result.usage.input_tokens;
+        totalOutputTokens += result.usage.output_tokens;
 
         // Add actions to the list
         actions.push(...result.actions);
@@ -143,6 +147,10 @@ export class OpenAICUAClient extends AgentClient {
         actions,
         message: finalMessage,
         completed,
+        usage: {
+          input_tokens: totalInputTokens,
+          output_tokens: totalOutputTokens,
+        },
       };
     } catch (error) {
       const errorMessage =
@@ -176,12 +184,17 @@ export class OpenAICUAClient extends AgentClient {
     completed: boolean;
     nextInputItems: ResponseInputItem[];
     responseId: string;
+    usage: { input_tokens: number; output_tokens: number };
   }> {
     try {
       // Get response from the model
       const result = await this.getAction(inputItems, previousResponseId);
       const output = result.output;
       const responseId = result.responseId;
+      const usage = {
+        input_tokens: result.usage.input_tokens,
+        output_tokens: result.usage.output_tokens,
+      };
 
       // Add any reasoning items to our map
       for (const item of output) {
@@ -239,6 +252,7 @@ export class OpenAICUAClient extends AgentClient {
         completed,
         nextInputItems,
         responseId,
+        usage: usage,
       };
     } catch (error) {
       const errorMessage =
@@ -291,6 +305,7 @@ export class OpenAICUAClient extends AgentClient {
   ): Promise<{
     output: ResponseItem[];
     responseId: string;
+    usage: Record<string, number>;
   }> {
     try {
       // Create the request parameters
@@ -317,6 +332,12 @@ export class OpenAICUAClient extends AgentClient {
       // @ts-expect-error - Force type to match what the OpenAI SDK expects
       const response = await this.client.responses.create(requestParams);
 
+      // Extract only the input_tokens and output_tokens
+      const usage = {
+        input_tokens: response.usage.input_tokens,
+        output_tokens: response.usage.output_tokens,
+      };
+
       // Store the response ID for future use
       this.lastResponseId = response.id;
 
@@ -324,6 +345,7 @@ export class OpenAICUAClient extends AgentClient {
       return {
         output: response.output as unknown as ResponseItem[],
         responseId: response.id,
+        usage,
       };
     } catch (error) {
       console.error("Error getting action from OpenAI:", error);

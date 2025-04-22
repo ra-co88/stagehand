@@ -185,11 +185,16 @@ export class AnthropicCUAClient extends AgentClient {
     message: string;
     completed: boolean;
     nextInputItems: ResponseInputItem[];
+    usage: { input_tokens: number; output_tokens: number };
   }> {
     try {
       // Get response from the model
       const result = await this.getAction(inputItems);
       const content = result.content;
+      const usage = {
+        input_tokens: result.usage.input_tokens,
+        output_tokens: result.usage.output_tokens,
+      };
 
       logger({
         category: "agent",
@@ -324,6 +329,7 @@ export class AnthropicCUAClient extends AgentClient {
         message: message.trim(),
         completed,
         nextInputItems,
+        usage: usage,
       };
     } catch (error) {
       const errorMessage =
@@ -355,6 +361,7 @@ export class AnthropicCUAClient extends AgentClient {
   async getAction(inputItems: ResponseInputItem[]): Promise<{
     content: AnthropicContentBlock[];
     id: string;
+    usage: Record<string, number>;
   }> {
     try {
       // For the API request, we use the inputItems directly
@@ -420,6 +427,10 @@ export class AnthropicCUAClient extends AgentClient {
       // Create the message using the Anthropic Messages API
       // @ts-expect-error - The Anthropic SDK types are stricter than what we need
       const response = await this.client.beta.messages.create(requestParams);
+      const usage = {
+        input_tokens: response.usage.input_tokens,
+        output_tokens: response.usage.output_tokens,
+      };
 
       // Store the message ID for future use
       this.lastMessageId = response.id;
@@ -429,6 +440,7 @@ export class AnthropicCUAClient extends AgentClient {
         // Cast the response content to our internal type
         content: response.content as unknown as AnthropicContentBlock[],
         id: response.id,
+        usage,
       };
     } catch (error) {
       console.error("Error getting action from Anthropic:", error);
