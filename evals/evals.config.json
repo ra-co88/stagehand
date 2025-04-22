@@ -311,6 +311,22 @@
       "categories": ["act"]
     },
     {
+      "name": "extract_jfk_links",
+      "categories": ["extract"]
+    },
+    {
+      "name": "extract_single_link",
+      "categories": ["extract"]
+    },
+    {
+      "name": "radio_btn",
+      "categories": ["act"]
+    },
+    {
+      "name": "checkboxes",
+      "categories": ["act"]
+    },
+    {
       "name": "agent/iframe_form",
       "categories": ["agent"]
     },
