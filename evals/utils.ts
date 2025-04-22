@@ -25,6 +25,7 @@ import { AnthropicClient } from "@/lib/llm/AnthropicClient";
 import { GoogleClient } from "@/lib/llm/GoogleClient";
 import { CreateLLMClientOptions } from "@/types/evals";
 import { StagehandEvalError } from "@/types/stagehandErrors";
+import { openai } from "@ai-sdk/openai";
 
 /**
  * normalizeString:
@@ -163,13 +164,8 @@ export function createLLMClient({
           ),
         });
       }
-      return new CustomOpenAIClient({
-        modelName,
-        client: wrapOpenAI(
-          new OpenAI({
-            apiKey: openAiKey,
-          }),
-        ),
+      return new AISdkClient({
+        model: wrapAISDKModel(openai(modelName)),
       });
     } else if (isGoogleModel) {
       return new AISdkClient({
