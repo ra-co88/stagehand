@@ -143,7 +143,8 @@ export function createLLMClient({
   anthropicKey,
   togetherKey,
 }: CreateLLMClientOptions): LLMClient {
-  const isOpenAIModel = modelName.startsWith("gpt");
+  const isOpenAIModel =
+    modelName.startsWith("gpt") || modelName.startsWith("o");
   const isGoogleModel = modelName.startsWith("gemini");
   const isAnthropicModel = modelName.startsWith("claude");
   const isGroqModel = modelName.includes("groq");
