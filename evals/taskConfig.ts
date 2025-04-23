@@ -100,7 +100,7 @@ if (filterByEvalName && !tasksByName[filterByEvalName]) {
  */
 const DEFAULT_EVAL_MODELS = process.env.EVAL_MODELS
   ? process.env.EVAL_MODELS.split(",")
-  : ["gemini-2.5-pro-preview-03-25", "o3"];
+  : ["gpt-4o-mini", "gpt-4o", "claude-3-5-sonnet-latest"];
 
 /**
  * getModelList:
