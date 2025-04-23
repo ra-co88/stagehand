@@ -10,12 +10,9 @@ import {
   LanguageModel,
   TextPart,
 } from "ai";
-import {
-  CreateChatCompletionOptions,
-  LLMClient,
-  AvailableModel,
-  LogLine,
-} from "@/dist";
+import { CreateChatCompletionOptions, LLMClient } from "./LLMClient";
+import { LogLine } from "../../types/log";
+import { AvailableModel } from "../../types/model";
 import { ChatCompletion } from "openai/resources";
 import { LLMCache } from "../cache/LLMCache";
 
