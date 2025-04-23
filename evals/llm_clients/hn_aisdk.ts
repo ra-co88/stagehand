@@ -1,5 +1,5 @@
 import { Stagehand } from "@/dist";
-import { AISdkClient } from "@/lib/llm//aisdk";
+import { AISdkClient } from "@/lib/llm/aisdk";
 import { EvalFunction } from "@/types/evals";
 import { openai } from "@ai-sdk/openai/dist";
 import { z } from "zod";
