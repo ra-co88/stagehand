@@ -102,6 +102,7 @@ const DEFAULT_EVAL_MODELS = process.env.EVAL_MODELS
   ? process.env.EVAL_MODELS.split(",")
   : ["gemini-2.0-flash", "gpt-4.1-mini", "claude-3-5-sonnet-latest"];
 
+// trigger CI
 /**
  * getModelList:
  * Returns a list of models to be used for the given category.
