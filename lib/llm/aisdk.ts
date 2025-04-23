@@ -44,7 +44,7 @@ export class AISdkClient extends LLMClient {
   async createChatCompletion<T = ChatCompletion>({
     options,
   }: CreateChatCompletionOptions): Promise<T> {
-    this.logger({
+    this.logger?.({
       category: "aisdk",
       message: "creating chat completion",
       level: 2,
@@ -72,7 +72,7 @@ export class AISdkClient extends LLMClient {
         options.requestId,
       );
       if (cachedResponse) {
-        this.logger({
+        this.logger?.({
           category: "llm_cache",
           message: "LLM cache hit - returning cached response",
           level: 1,
@@ -89,7 +89,7 @@ export class AISdkClient extends LLMClient {
         });
         return cachedResponse;
       } else {
-        this.logger({
+        this.logger?.({
           category: "llm_cache",
           message: "LLM cache miss - no cached response found",
           level: 1,
@@ -173,7 +173,7 @@ export class AISdkClient extends LLMClient {
       } as T;
 
       if (this.enableCaching) {
-        this.logger({
+        this.logger?.({
           category: "llm_cache",
           message: "caching response",
           level: 1,
@@ -195,7 +195,7 @@ export class AISdkClient extends LLMClient {
         this.cache.set(cacheOptions, result, options.requestId);
       }
 
-      this.logger({
+      this.logger?.({
         category: "aisdk",
         message: "response",
         level: 2,
@@ -239,7 +239,7 @@ export class AISdkClient extends LLMClient {
     } as T;
 
     if (this.enableCaching) {
-      this.logger({
+      this.logger?.({
         category: "llm_cache",
         message: "caching response",
         level: 1,
@@ -261,7 +261,7 @@ export class AISdkClient extends LLMClient {
       this.cache.set(cacheOptions, result, options.requestId);
     }
 
-    this.logger({
+    this.logger?.({
       category: "aisdk",
       message: "response",
       level: 2,
