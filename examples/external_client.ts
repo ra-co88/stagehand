@@ -1,6 +1,6 @@
 import { Stagehand } from "@/dist";
 import { z } from "zod";
-import { CustomOpenAIClient } from "./external_clients/customOpenAI";
+import { CustomOpenAIClient } from "@/lib/llm/customOpenAI";
 import StagehandConfig from "@/stagehand.config";
 import OpenAI from "openai";
 

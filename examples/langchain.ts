@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Stagehand } from "@/dist";
 import StagehandConfig from "@/stagehand.config";
-import { LangchainClient } from "./external_clients/langchain";
+import { LangchainClient } from "@/lib/llm/langchain";
 import { ChatOpenAI } from "@langchain/openai";
 
 async function example() {

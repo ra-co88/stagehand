@@ -1,6 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { Stagehand } from "@/dist";
-import { AISdkClient } from "./external_clients/aisdk";
+import { AISdkClient } from "@/lib/llm/aisdk";
 import StagehandConfig from "@/stagehand.config";
 import { z } from "zod";
 
