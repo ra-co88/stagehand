@@ -17,19 +17,9 @@ import { GoogleClient } from "./GoogleClient";
 import { GroqClient } from "./GroqClient";
 import { LLMClient } from "./LLMClient";
 import { OpenAIClient } from "./OpenAIClient";
-
-function modelToProvider(
-  modelName: AvailableModel | LanguageModel,
-): ModelProvider {
-  if (typeof modelName === "string") {
-    const provider = modelToProviderMap[modelName];
-    if (!provider) {
-      throw new UnsupportedModelError(Object.keys(modelToProviderMap));
-    }
-    return provider;
-  }
-  return "aisdk";
-}
+import { openai } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
+import { google } from "@ai-sdk/google";
 
 const modelToProviderMap: { [key in AvailableModel]: ModelProvider } = {
   "gpt-4.1": "openai",
@@ -63,6 +53,31 @@ const modelToProviderMap: { [key in AvailableModel]: ModelProvider } = {
   "gemini-2.0-flash": "google",
   "gemini-2.5-flash-preview-04-17": "google",
   "gemini-2.5-pro-preview-03-25": "google",
+  "aisdk/anthropic/claude-3-5-sonnet-latest": "aisdk",
+  "aisdk/anthropic/claude-3-5-sonnet-20240620": "aisdk",
+  "aisdk/anthropicclaude-3-5-sonnet-20241022": "aisdk",
+  "aisdk/anthropic/claude-3-7-sonnet-20250219": "aisdk",
+  "aisdk/anthropic/claude-3-7-sonnet-latest": "aisdk",
+  "aisdk/google/gemini-1.5-flash": "aisdk",
+  "aisdk/google/gemini-1.5-pro": "aisdk",
+  "aisdk/google/gemini-1.5-flash-8b": "aisdk",
+  "aisdk/google/gemini-2.0-flash-lite": "aisdk",
+  "aisdk/google/gemini-2.0-flash": "aisdk",
+  "aisdk/google/gemini-2.5-flash-preview-04-17": "aisdk",
+  "aisdk/google/gemini-2.5-pro-preview-03-25": "aisdk",
+  "aisdk/openai/gpt-4.1": "aisdk",
+  "aisdk/openai/gpt-4.1-mini": "aisdk",
+  "aisdk/openai/gpt-4.1-nano": "aisdk",
+  "aisdk/openai/o4-mini": "aisdk",
+  "aisdk/openai/o3": "aisdk",
+  "aisdk/openai/o3-mini": "aisdk",
+  "aisdk/openai/o1": "aisdk",
+  "aisdk/openai/o1-mini": "aisdk",
+  "aisdk/openai/gpt-4o": "aisdk",
+  "aisdk/openai/gpt-4o-mini": "aisdk",
+  "aisdk/openai/gpt-4o-2024-08-06": "aisdk",
+  "aisdk/openai/gpt-4.5-preview": "aisdk",
+  "aisdk/openai/o1-preview": "aisdk",
 };
 
 export class LLMProvider {
@@ -96,17 +111,39 @@ export class LLMProvider {
   }
 
   getClient(
-    modelName: AvailableModel | LanguageModel,
+    modelName: AvailableModel,
     clientOptions?: ClientOptions,
   ): LLMClient {
-    const provider = modelToProvider(modelName);
+    const provider = modelToProviderMap[modelName];
     if (!provider) {
       throw new UnsupportedModelError(Object.keys(modelToProviderMap));
     }
 
     if (provider === "aisdk") {
+      const parts = modelName.split("/");
+      if (parts.length !== 3) {
+        throw new Error(`Invalid aisdk model format: ${modelName}`);
+      }
+
+      const [, subProvider, subModelName] = parts;
+      let languageModel: LanguageModel;
+
+      switch (subProvider) {
+        case "openai":
+          languageModel = openai(subModelName);
+          break;
+        case "anthropic":
+          languageModel = anthropic(subModelName);
+          break;
+        case "google":
+          languageModel = google(subModelName);
+          break;
+        default:
+          throw new Error(`Unsupported aisdk sub-provider: ${subProvider}`);
+      }
+
       return new AISdkClient({
-        model: modelName as LanguageModel,
+        model: languageModel,
         logger: this.logger,
         enableCaching: this.enableCaching,
         cache: this.cache,

@@ -1,12 +1,11 @@
 import { Stagehand } from "@/dist";
 import StagehandConfig from "@/stagehand.config";
-import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 
 async function example() {
   const stagehand = new Stagehand({
     ...StagehandConfig,
-    modelName: openai("gpt-4o"),
+    modelName: "aisdk/openai/gpt-4o",
   });
 
   await stagehand.init();
