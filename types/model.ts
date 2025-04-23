@@ -41,7 +41,8 @@ export type ModelProvider =
   | "anthropic"
   | "cerebras"
   | "groq"
-  | "google";
+  | "google"
+  | "aisdk";
 
 export type ClientOptions = OpenAIClientOptions | AnthropicClientOptions;
 

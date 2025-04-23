@@ -1,3 +1,8 @@
+import {
+  UnsupportedModelError,
+  UnsupportedModelProviderError,
+} from "@/types/stagehandErrors";
+import { LanguageModel } from "ai";
 import { LogLine } from "../../types/log";
 import {
   AvailableModel,
@@ -5,16 +10,26 @@ import {
   ModelProvider,
 } from "../../types/model";
 import { LLMCache } from "../cache/LLMCache";
+import { AISdkClient } from "./aisdk";
 import { AnthropicClient } from "./AnthropicClient";
 import { CerebrasClient } from "./CerebrasClient";
 import { GoogleClient } from "./GoogleClient";
 import { GroqClient } from "./GroqClient";
 import { LLMClient } from "./LLMClient";
 import { OpenAIClient } from "./OpenAIClient";
-import {
-  UnsupportedModelError,
-  UnsupportedModelProviderError,
-} from "@/types/stagehandErrors";
+
+function modelToProvider(
+  modelName: AvailableModel | LanguageModel,
+): ModelProvider {
+  if (typeof modelName === "string") {
+    const provider = modelToProviderMap[modelName];
+    if (!provider) {
+      throw new UnsupportedModelError(Object.keys(modelToProviderMap));
+    }
+    return provider;
+  }
+  return "aisdk";
+}
 
 const modelToProviderMap: { [key in AvailableModel]: ModelProvider } = {
   "gpt-4.1": "openai",
@@ -81,21 +96,31 @@ export class LLMProvider {
   }
 
   getClient(
-    modelName: AvailableModel,
+    modelName: AvailableModel | LanguageModel,
     clientOptions?: ClientOptions,
   ): LLMClient {
-    const provider = modelToProviderMap[modelName];
+    const provider = modelToProvider(modelName);
     if (!provider) {
       throw new UnsupportedModelError(Object.keys(modelToProviderMap));
     }
 
+    if (provider === "aisdk") {
+      return new AISdkClient({
+        model: modelName as LanguageModel,
+        logger: this.logger,
+        enableCaching: this.enableCaching,
+        cache: this.cache,
+      });
+    }
+
+    const availableModel = modelName as AvailableModel;
     switch (provider) {
       case "openai":
         return new OpenAIClient({
           logger: this.logger,
           enableCaching: this.enableCaching,
           cache: this.cache,
-          modelName,
+          modelName: availableModel,
           clientOptions,
         });
       case "anthropic":
@@ -103,7 +128,7 @@ export class LLMProvider {
           logger: this.logger,
           enableCaching: this.enableCaching,
           cache: this.cache,
-          modelName,
+          modelName: availableModel,
           clientOptions,
         });
       case "cerebras":
@@ -111,7 +136,7 @@ export class LLMProvider {
           logger: this.logger,
           enableCaching: this.enableCaching,
           cache: this.cache,
-          modelName,
+          modelName: availableModel,
           clientOptions,
         });
       case "groq":
@@ -119,7 +144,7 @@ export class LLMProvider {
           logger: this.logger,
           enableCaching: this.enableCaching,
           cache: this.cache,
-          modelName,
+          modelName: availableModel,
           clientOptions,
         });
       case "google":
@@ -127,7 +152,7 @@ export class LLMProvider {
           logger: this.logger,
           enableCaching: this.enableCaching,
           cache: this.cache,
-          modelName,
+          modelName: availableModel,
           clientOptions,
         });
       default:

@@ -45,6 +45,7 @@ import {
   MissingEnvironmentVariableError,
   UnsupportedModelError,
 } from "../types/stagehandErrors";
+import { LanguageModel } from "ai";
 
 dotenv.config({ path: ".env" });
 
@@ -384,7 +385,7 @@ export class Stagehand {
   public llmClient: LLMClient;
   public readonly userProvidedInstructions?: string;
   private usingAPI: boolean;
-  private modelName: AvailableModel;
+  private modelName: AvailableModel | LanguageModel;
   public apiClient: StagehandAPI | undefined;
   public readonly waitForCaptchaSolves: boolean;
   private localBrowserLaunchOptions?: LocalBrowserLaunchOptions;
@@ -656,18 +657,23 @@ export class Stagehand {
         projectId: this.projectId,
         logger: this.logger,
       });
+
       const modelApiKey =
+        // @ts-expect-error - this is a temporary fix to allow the modelName to be a LanguageModel
         LLMProvider.getModelProvider(this.modelName) === "openai"
           ? process.env.OPENAI_API_KEY || this.llmClient.clientOptions.apiKey
-          : LLMProvider.getModelProvider(this.modelName) === "anthropic"
+          : // @ts-expect-error - this is a temporary fix to allow the modelName to be a LanguageModel
+            LLMProvider.getModelProvider(this.modelName) === "anthropic"
             ? process.env.ANTHROPIC_API_KEY ||
               this.llmClient.clientOptions.apiKey
-            : LLMProvider.getModelProvider(this.modelName) === "google"
+            : // @ts-expect-error - this is a temporary fix to allow the modelName to be a LanguageModel
+              LLMProvider.getModelProvider(this.modelName) === "google"
               ? process.env.GOOGLE_API_KEY ||
                 this.llmClient.clientOptions.apiKey
               : undefined;
 
       const { sessionId } = await this.apiClient.init({
+        // @ts-expect-error - this is a temporary fix to allow the modelName to be a LanguageModel
         modelName: this.modelName,
         modelApiKey: modelApiKey,
         domSettleTimeoutMs: this.domSettleTimeoutMs,

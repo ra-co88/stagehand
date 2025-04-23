@@ -6,6 +6,7 @@ import { AvailableModel, ClientOptions } from "./model";
 import { LLMClient } from "../lib/llm/LLMClient";
 import { Cookie } from "@playwright/test";
 import { AgentProviderType } from "./agent";
+import { LanguageModel } from "ai";
 
 export interface ConstructorParams {
   /**
@@ -58,7 +59,7 @@ export interface ConstructorParams {
   /**
    * The model to use for Stagehand
    */
-  modelName?: AvailableModel;
+  modelName?: AvailableModel | LanguageModel;
   /**
    * The LLM client to use for Stagehand
    */
