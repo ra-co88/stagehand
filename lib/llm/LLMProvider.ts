@@ -30,8 +30,6 @@ import { deepseek } from "@ai-sdk/deepseek";
 import { perplexity } from "@ai-sdk/perplexity";
 import { ollama } from "ollama-ai-provider";
 
-
-
 const modelToProviderMap: { [key in AvailableModel]: ModelProvider } = {
   "gpt-4.1": "openai",
   "gpt-4.1-mini": "openai",
@@ -100,7 +98,6 @@ export class LLMProvider {
     modelName: AvailableModel,
     clientOptions?: ClientOptions,
   ): LLMClient {
-
     if (modelName.includes("/")) {
       const parts = modelName.split("/");
       if (parts.length !== 2) {
