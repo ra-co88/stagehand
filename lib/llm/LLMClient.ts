@@ -2,7 +2,17 @@ import { ZodType } from "zod";
 import { LLMTool } from "../../types/llm";
 import { LogLine } from "../../types/log";
 import { AvailableModel, ClientOptions } from "../../types/model";
-import { generateObject, generateText, streamText, streamObject, experimental_generateImage, embed, embedMany, experimental_transcribe, experimental_generateSpeech } from "ai";
+import {
+  generateObject,
+  generateText,
+  streamText,
+  streamObject,
+  experimental_generateImage,
+  embed,
+  embedMany,
+  experimental_transcribe,
+  experimental_generateSpeech,
+} from "ai";
 
 export interface ChatMessage {
   role: "system" | "user" | "assistant";
