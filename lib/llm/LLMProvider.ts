@@ -20,6 +20,17 @@ import { OpenAIClient } from "./OpenAIClient";
 import { openai } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
+import { xai } from "@ai-sdk/xai";
+import { azure } from "@ai-sdk/azure";
+import { groq } from "@ai-sdk/groq";
+import { cerebras } from "@ai-sdk/cerebras";
+import { togetherai } from "@ai-sdk/togetherai";
+import { mistral } from "@ai-sdk/mistral";
+import { deepseek } from "@ai-sdk/deepseek";
+import { perplexity } from "@ai-sdk/perplexity";
+import { ollama } from "ollama-ai-provider";
+
+
 
 const modelToProviderMap: { [key in AvailableModel]: ModelProvider } = {
   "gpt-4.1": "openai",
@@ -53,31 +64,6 @@ const modelToProviderMap: { [key in AvailableModel]: ModelProvider } = {
   "gemini-2.0-flash": "google",
   "gemini-2.5-flash-preview-04-17": "google",
   "gemini-2.5-pro-preview-03-25": "google",
-  "aisdk/anthropic/claude-3-5-sonnet-latest": "aisdk",
-  "aisdk/anthropic/claude-3-5-sonnet-20240620": "aisdk",
-  "aisdk/anthropicclaude-3-5-sonnet-20241022": "aisdk",
-  "aisdk/anthropic/claude-3-7-sonnet-20250219": "aisdk",
-  "aisdk/anthropic/claude-3-7-sonnet-latest": "aisdk",
-  "aisdk/google/gemini-1.5-flash": "aisdk",
-  "aisdk/google/gemini-1.5-pro": "aisdk",
-  "aisdk/google/gemini-1.5-flash-8b": "aisdk",
-  "aisdk/google/gemini-2.0-flash-lite": "aisdk",
-  "aisdk/google/gemini-2.0-flash": "aisdk",
-  "aisdk/google/gemini-2.5-flash-preview-04-17": "aisdk",
-  "aisdk/google/gemini-2.5-pro-preview-03-25": "aisdk",
-  "aisdk/openai/gpt-4.1": "aisdk",
-  "aisdk/openai/gpt-4.1-mini": "aisdk",
-  "aisdk/openai/gpt-4.1-nano": "aisdk",
-  "aisdk/openai/o4-mini": "aisdk",
-  "aisdk/openai/o3": "aisdk",
-  "aisdk/openai/o3-mini": "aisdk",
-  "aisdk/openai/o1": "aisdk",
-  "aisdk/openai/o1-mini": "aisdk",
-  "aisdk/openai/gpt-4o": "aisdk",
-  "aisdk/openai/gpt-4o-mini": "aisdk",
-  "aisdk/openai/gpt-4o-2024-08-06": "aisdk",
-  "aisdk/openai/gpt-4.5-preview": "aisdk",
-  "aisdk/openai/o1-preview": "aisdk",
 };
 
 export class LLMProvider {
@@ -114,18 +100,13 @@ export class LLMProvider {
     modelName: AvailableModel,
     clientOptions?: ClientOptions,
   ): LLMClient {
-    const provider = modelToProviderMap[modelName];
-    if (!provider) {
-      throw new UnsupportedModelError(Object.keys(modelToProviderMap));
-    }
 
-    if (provider === "aisdk") {
+    if (modelName.includes("/")) {
       const parts = modelName.split("/");
-      if (parts.length !== 3) {
+      if (parts.length !== 2) {
         throw new Error(`Invalid aisdk model format: ${modelName}`);
       }
-
-      const [, subProvider, subModelName] = parts;
+      const [subProvider, subModelName] = parts;
       let languageModel: LanguageModel;
 
       switch (subProvider) {
@@ -137,6 +118,33 @@ export class LLMProvider {
           break;
         case "google":
           languageModel = google(subModelName);
+          break;
+        case "xai":
+          languageModel = xai(subModelName);
+          break;
+        case "azure":
+          languageModel = azure(subModelName);
+          break;
+        case "groq":
+          languageModel = groq(subModelName);
+          break;
+        case "cerebras":
+          languageModel = cerebras(subModelName);
+          break;
+        case "togetherai":
+          languageModel = togetherai(subModelName);
+          break;
+        case "mistral":
+          languageModel = mistral(subModelName);
+          break;
+        case "deepseek":
+          languageModel = deepseek(subModelName);
+          break;
+        case "perplexity":
+          languageModel = perplexity(subModelName);
+          break;
+        case "ollama":
+          languageModel = ollama(subModelName);
           break;
         default:
           throw new Error(`Unsupported aisdk sub-provider: ${subProvider}`);
@@ -150,6 +158,10 @@ export class LLMProvider {
       });
     }
 
+    const provider = modelToProviderMap[modelName];
+    if (!provider) {
+      throw new UnsupportedModelError(Object.keys(modelToProviderMap));
+    }
     const availableModel = modelName as AvailableModel;
     switch (provider) {
       case "openai":
